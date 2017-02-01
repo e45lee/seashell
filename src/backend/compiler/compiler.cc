@@ -112,6 +112,11 @@
 #error "Unsupported version of clang."
 #endif
 
+// Comment this out to get verbose compiler output.
+#ifndef NDEBUG
+#define NDEBUG
+#endif
+
 /** Data structure for compiler diagnostic messages.
  * Opaque to Racket - C accessor functions described below.
  */
@@ -250,7 +255,7 @@ extern "C" const char* seashell_clang_version() {
 extern "C" struct seashell_compiler* seashell_compiler_make (void) {
   struct seashell_compiler* r = new seashell_compiler;
 #if defined(__EMSCRIPTEN__) && !defined(NDEBUG)
-  printf("[compiler] Allocating new compiler object at %p\n", r);
+  fprintf(stderr, "[compiler] Allocating new compiler object at %p\n", r);
 #endif
   return r;
 }
@@ -264,7 +269,7 @@ extern "C" struct seashell_compiler* seashell_compiler_make (void) {
  */
 extern "C" void seashell_compiler_free (struct seashell_compiler* compiler) {
 #if defined(__EMSCRIPTEN__) && !defined(NDEBUG)
-  printf("[compiler] De-Allocating new compiler object at %p\n", compiler);
+  fprintf(stderr, "[compiler] De-Allocating new compiler object at %p\n", compiler);
 #endif
   delete compiler;
 }
@@ -1131,10 +1136,12 @@ public:
 int PPAction::iter = 0;
 
 static void print_sources(struct seashell_compiler *compiler) {
+#ifndef NDEBUG
   fprintf(stderr, "Sources:\n");
   for(int i=0; i<compiler->source_paths.size(); i++) {
     fprintf(stderr, "%s\n", compiler->source_paths[i].c_str());
   }
+#endif
 }
 
 /**
