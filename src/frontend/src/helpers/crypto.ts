@@ -3,12 +3,16 @@ export {Coder}
 class Coder {
   private cipher;
 
-  constructor(key) {
+  constructor(key: number[]) {
     this.cipher = new sjcl.cipher.aes(key);
   }
 
   public encrypt(frame, plain) {
     var iv = sjcl.random.randomWords(12); // We'll generate 48 bytes of entropy and use 12.
+    return this.encryptWithIV(iv, frame, plain);
+  }
+  public encryptWithIV(iv, frame, plain) {
+    // var iv = sjcl.random.randomWords(12); // We'll generate 48 bytes of entropy and use 12.
     var ivArr = this.toBits(iv);
     var frameArr = this.toBits(frame);
     var plainArr = this.toBits(plain);
