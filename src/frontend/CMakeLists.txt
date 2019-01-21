@@ -33,7 +33,7 @@ add_custom_target(seashell-frontend-src-copy
 )
 find_program(SEASHELL_NPM npm)
 add_custom_target(seashell-frontend-configure
-    COMMAND ${SEASHELL_NPM} install
+    COMMAND ${SEASHELL_NPM} install --no-optional
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
     DEPENDS seashell-frontend-src-copy)
 add_custom_command(OUTPUT dist.tar.gz

@@ -27,7 +27,6 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-
 #include <libgen.h>
 #include <unistd.h>
 #include <errno.h>
@@ -71,7 +70,6 @@
 #include <llvm/ADT/IntrusiveRefCntPtr.h>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/Triple.h>
-#include <llvm/CodeGen/CommandFlags.h>
 #include <llvm/CodeGen/LinkAllAsmWriterComponents.h>
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
 #include <llvm/IR/DataLayout.h>
@@ -99,15 +97,14 @@
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Transforms/Utils/Cloning.h>
-#include <llvm/Bitcode/ReaderWriter.h>
 #include <llvm/IR/DiagnosticPrinter.h>
-#include <llvm/Target/TargetSubtargetInfo.h>
 #include <llvm/Linker/Linker.h>
 #include <llvm/IR/DebugInfo.h>
+#include <llvm/IR/DiagnosticInfo.h>
 #include <llvm/IR/DIBuilder.h>
 #include <llvm/IR/LegacyPassManager.h>
 
-#if CLANG_VERSION_MAJOR == 3 && CLANG_VERSION_MINOR == 9
+#if CLANG_VERSION_MAJOR == 7 && CLANG_VERSION_MINOR == 0
 #else
 #error "Unsupported version of clang."
 #endif
@@ -194,17 +191,17 @@ extern "C" __attribute__((weak)) void llvm_assume(bool c) {
  */
 static void seashell_llvm_setup() {
 #ifndef __EMSCRIPTEN__
-    InitializeNativeTarget();
-    InitializeNativeTargetAsmPrinter();
-    InitializeNativeTargetAsmParser();
-    InitializeNativeTargetDisassembler();
+  llvm::InitializeNativeTarget();
+  llvm::InitializeNativeTargetAsmPrinter();
+  llvm::InitializeNativeTargetAsmParser();
+  llvm::InitializeNativeTargetDisassembler();
 
-    PassRegistry *Registry = PassRegistry::getPassRegistry();
-    initializeCore(*Registry);
-    initializeCodeGen(*Registry);
-    initializeLoopStrengthReducePass(*Registry);
-    initializeLowerIntrinsicsPass(*Registry);
-    initializeUnreachableBlockElimLegacyPassPass(*Registry);
+  llvm::PassRegistry *Registry = llvm::PassRegistry::getPassRegistry();
+  llvm::initializeCore(*Registry);
+  llvm::initializeCodeGen(*Registry);
+  llvm::initializeLoopStrengthReducePass(*Registry);
+  llvm::initializeLowerIntrinsicsPass(*Registry);
+  llvm::initializeUnreachableBlockElimLegacyPassPass(*Registry);
 #else
     // Compiler bug in emcc (as of 7 April/15)
     llvm_assume(true);
@@ -216,7 +213,7 @@ static void seashell_llvm_setup() {
  * Performs necessary LLVM cleanup.
  */
 static void seashell_llvm_cleanup() {
-  llvm_shutdown();
+  llvm::llvm_shutdown();
 }
 
 /** Helper class for making sure LLVM
@@ -562,7 +559,11 @@ std::string seashell_compiler_object_arch(struct seashell_compiler* compiler) {
   llvm::Triple TheTriple = llvm::Triple(compiler->module.getTargetTriple());
   if (TheTriple.getArch() == llvm::Triple::UnknownArch)
     return NULL;
+#ifndef __EMSCRIPTEN__
+  return llvm::Triple::getArchTypeName(TheTriple.getArch()).str().c_str();
+#else
   return llvm::Triple::getArchTypeName(TheTriple.getArch());
+#endif
 }
 
 /**
@@ -583,13 +584,17 @@ std::string seashell_compiler_object_os (struct seashell_compiler* compiler) {
   llvm::Triple TheTriple = llvm::Triple(compiler->module.getTargetTriple());
   if (TheTriple.getOS() == llvm::Triple::UnknownOS)
     return NULL;
+#ifndef __EMSCRIPTEN__
+  return llvm::Triple::getOSTypeName(TheTriple.getOS()).str().c_str();
+#else
   return llvm::Triple::getOSTypeName(TheTriple.getOS());
+#endif
 }
 
-static void printDiagnosticOptions(raw_ostream &OS,
-                                   clang::DiagnosticsEngine::Level Level,
-                                   const clang::Diagnostic &Info,
-                                   const clang::DiagnosticOptions &DiagOpts) {
+ static void printDiagnosticOptions(llvm::raw_ostream &OS,
+                                    clang::DiagnosticsEngine::Level Level,
+                                    const clang::Diagnostic &Info,
+                                    const clang::DiagnosticOptions &DiagOpts) {
   bool Started = false;
   if (DiagOpts.ShowOptionNames) {
     if (Info.getID() == clang::diag::fatal_too_many_errors) {
@@ -630,7 +635,7 @@ static void printDiagnosticOptions(raw_ostream &OS,
 }
 
 class SeashellDiagnosticClient : public clang::DiagnosticConsumer {
-  IntrusiveRefCntPtr<clang::DiagnosticOptions> DiagOpts;
+  llvm::IntrusiveRefCntPtr<clang::DiagnosticOptions> DiagOpts;
 
 public:
   std::set<seashell_diag> messages;
@@ -659,7 +664,7 @@ public:
         clang::FileID FID = SM->getFileID(Loc);
         if( !FID.isInvalid()) {
           const clang::FileEntry * FE = SM->getFileEntryForID(FID);
-          if(FE && FE->getName()) {
+          if(FE && !FE->getName().empty()) {
             messages.insert(seashell_diag(error, FE->getName(), OutStr.c_str()));
             return;
           } else {
@@ -695,23 +700,23 @@ public:
  */
 static int final_link_step (struct seashell_compiler* compiler, bool gen_bytecode)
 {
-  Module* mod = &compiler->module;
+  llvm::Module* mod = &compiler->module;
   /** Compile to Object code if running natively. */
   std::string Error;
 
 
   /* Compile LLVM IR to architecture-specific assembly code. */
-  SMDiagnostic Err;
-  Triple TheTriple;
+  llvm::SMDiagnostic Err;
+  llvm::Triple TheTriple;
 
   /** Grab the triple, get the right code generator. */
-  TheTriple = Triple(mod->getTargetTriple());
+  TheTriple = llvm::Triple(mod->getTargetTriple());
   if (TheTriple.getTriple().empty())
-    TheTriple.setTriple(sys::getDefaultTargetTriple());
+    TheTriple.setTriple(llvm::sys::getDefaultTargetTriple());
 
   if(!gen_bytecode) {
 #ifndef __EMSCRIPTEN__
-    const Target *TheTarget = TargetRegistry::lookupTarget(TheTriple.getTriple(), Error);
+    const llvm::Target *TheTarget = llvm::TargetRegistry::lookupTarget(TheTriple.getTriple(), Error);
     if (!TheTarget) {
       compiler->linker_messages = "libseashell-clang: couldn't look up target: " + TheTriple.getTriple() + ".";
       return 1;
@@ -719,17 +724,17 @@ static int final_link_step (struct seashell_compiler* compiler, bool gen_bytecod
 
 
     /** Code Generation Options - we generate code with standard options. */
-    TargetOptions Options;
+    llvm::TargetOptions Options;
 
     /** Grab a copy of the target. */
-    std::unique_ptr<TargetMachine>
+    std::unique_ptr<llvm::TargetMachine>
       target(TheTarget->createTargetMachine(TheTriple.getTriple(),
                                             "generic", "", Options, llvm::None)); // FIXME: llvm Reloc optional argument now?
     if (!target.get()) {
       compiler->linker_messages = "libseashell-clang: couldn't get machine for target: " + TheTriple.getTriple() + ".";
       return 1;
     }
-    TargetMachine &Target = *target.get();
+    llvm::TargetMachine &Target = *target.get();
 
     /** Set up the code generator. */
     llvm::legacy::PassManager PM;
@@ -738,7 +743,7 @@ static int final_link_step (struct seashell_compiler* compiler, bool gen_bytecod
     llvm::SmallString<128> result;
     llvm::raw_svector_ostream raw(result);
 
-    if (Target.addPassesToEmitFile(PM, raw, llvm::TargetMachine::CGFT_ObjectFile)) {
+    if (Target.addPassesToEmitFile(PM, raw, nullptr, llvm::TargetMachine::CGFT_ObjectFile), false, nullptr) {
       compiler->linker_messages = "libseashell-clang: couldn't emit object code for target: " + TheTriple.getTriple() + ".";
       return 1;
     }
@@ -774,7 +779,7 @@ static int final_link_step (struct seashell_compiler* compiler, bool gen_bytecod
  *
  * see clang/tools/driver/driver.cpp
  */
-static clang::DiagnosticOptions * CreateAndPopulateDiagOpts(ArrayRef<const char *> argv) {
+static clang::DiagnosticOptions * CreateAndPopulateDiagOpts(llvm::ArrayRef<const char *> argv) {
   auto *DiagOpts = new clang::DiagnosticOptions;
   std::unique_ptr<llvm::opt::OptTable> Opts(clang::driver::createDriverOptTable());
   unsigned MissingArgIndex, MissingArgCount;
@@ -787,10 +792,10 @@ static clang::DiagnosticOptions * CreateAndPopulateDiagOpts(ArrayRef<const char 
   return DiagOpts;
 }
 
-static void StringDiagnosticHandler(const DiagnosticInfo &DI, void *C) {
+ static void StringDiagnosticHandler(const llvm::DiagnosticInfo &DI, void *C) {
   auto *Message = reinterpret_cast<std::string *>(C);
-  raw_string_ostream Stream(*Message);
-  DiagnosticPrinterRawOStream DP(Stream);
+  llvm::raw_string_ostream Stream(*Message);
+  llvm::DiagnosticPrinterRawOStream DP(Stream);
   DI.print(DP);
 }
 /**
@@ -842,7 +847,7 @@ static int compile_module (seashell_compiler* compiler,
     clang::FileManager CI_FM((clang::FileSystemOptions()));
     clang::SourceManager CI_SM(CI_Diags, CI_FM);
 
-    clang::IntrusiveRefCntPtr<clang::CompilerInvocation> CI(new clang::CompilerInvocation);
+    std::shared_ptr<clang::CompilerInvocation> CI(new clang::CompilerInvocation);
 
     Success = clang::CompilerInvocation::CreateFromArgs(*CI, &args[0], &args[0] + args.size(), CI_Diags);
     if (!Success) {
@@ -853,11 +858,7 @@ static int compile_module (seashell_compiler* compiler,
     }
 
     clang::CompilerInstance Clang;
-#if CLANG_VERSION_MAJOR == 3 && CLANG_VERSION_MINOR >= 5
-    Clang.setInvocation(CI.get());
-#elif CLANG_VERSION_MAJOR == 3 && CLANG_VERSION_MINOR == 4
-    Clang.setInvocation(CI.getPtr());
-#endif
+    Clang.setInvocation(CI);
     Clang.createDiagnostics(&diag_client, false);
     Clang.createFileManager();
     Clang.createSourceManager(Clang.getFileManager());
@@ -912,23 +913,22 @@ static int compile_module (seashell_compiler* compiler,
     std::copy(diag_client.messages.begin(), diag_client.messages.end(),
                 std::back_inserter(compile_messages));
 
-    std::unique_ptr<Module> mod(CodeGen.takeModule());
+    std::unique_ptr<llvm::Module> mod(CodeGen.takeModule());
     if (!mod) {
       return 1;
     }
 
 #ifndef __EMSCRIPTEN__
-    LLVMContext::DiagnosticHandlerTy OldDiagnosticHandler =
-      compiler->context.getDiagnosticHandler();
+    auto OldDiagnosticHandler = compiler->context.getDiagnosticHandlerCallBack();
     void *OldDiagnosticContext = compiler->context.getDiagnosticContext();
     std::string Message;
-    compiler->context.setDiagnosticHandler(StringDiagnosticHandler, &Message, true);
+    compiler->context.setDiagnosticHandlerCallBack(StringDiagnosticHandler, &Message, true);
 #else
     std::string Message = "Error linking modules!  Make sure there are no multiply-defined symbols!";
 #endif
     Success = !llvm::Linker::linkModules(*module, std::move(mod));
 #ifndef __EMSCRIPTEN__
-    compiler->context.setDiagnosticHandler(OldDiagnosticHandler, OldDiagnosticContext, true);
+    compiler->context.setDiagnosticHandlerCallBack(OldDiagnosticHandler, OldDiagnosticContext, true);
 #endif
     if (!Success) {
       PUSH_DIAGNOSTIC(Message);
@@ -1195,7 +1195,7 @@ static int preprocess_file(struct seashell_compiler *compiler, const char* src_p
     clang::FileManager CI_FM((clang::FileSystemOptions()));
     clang::SourceManager CI_SM(CI_Diags, CI_FM);
 
-    clang::IntrusiveRefCntPtr<clang::CompilerInvocation> CI(new clang::CompilerInvocation);
+    std::shared_ptr<clang::CompilerInvocation> CI(new clang::CompilerInvocation);
 
     Success = clang::CompilerInvocation::CreateFromArgs(*CI, &args[0], &args[0] + args.size(), CI_Diags);
     worklist.pop_front();
@@ -1207,11 +1207,7 @@ static int preprocess_file(struct seashell_compiler *compiler, const char* src_p
     }
 
     clang::CompilerInstance Clang;
-#if CLANG_VERSION_MAJOR == 3 && CLANG_VERSION_MINOR >= 5
-    Clang.setInvocation(CI.get());
-#elif CLANG_VERSION_MAJOR == 3 && CLANG_VERSION_MINOR == 4
-    Clang.setInvocation(CI.getPtr());
-#endif
+    Clang.setInvocation(CI);
     Clang.createDiagnostics(&diag_client, false);
     Clang.createFileManager();
     Clang.createSourceManager(Clang.getFileManager());
@@ -1222,7 +1218,7 @@ static int preprocess_file(struct seashell_compiler *compiler, const char* src_p
                   std::back_inserter(pp_messages));
       return 1;
     }
-    
+
     // Add compiler-specific headers. 
 #ifndef __EMSCRIPTEN__
     if (!IS_INSTALLED() && access (BUILD_DIR "/lib/llvm/lib/clang/" CLANG_VERSION_STRING "/include/", F_OK) != -1) {
