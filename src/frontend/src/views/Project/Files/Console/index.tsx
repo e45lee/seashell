@@ -7,10 +7,10 @@ import { GenericError } from "../../../../helpers/Errors";
 
 export interface ConsoleProps {
   readOnly: boolean;
-  style?: any;
   className?: string;
   dispatch: any;
   consoleText: string;
+  options: {font: string, fontSize: number};
 }
 
 export interface ConsoleState {
@@ -19,7 +19,6 @@ export interface ConsoleState {
   currString: string;
 };
 
-const customStyles = require("./Console.scss");
 const styles = require("xterm/css/xterm.css");
 
 export default class Xterm extends React.PureComponent<ConsoleProps, ConsoleState> {
@@ -30,7 +29,9 @@ export default class Xterm extends React.PureComponent<ConsoleProps, ConsoleStat
   constructor(props: ConsoleProps, context: any) {
     super(props, context);
     this.term = new Terminal({
-      cursorBlink: true
+      cursorBlink: true,
+      fontFamily: props.options.font + ", monospace",
+      fontSize: props.options.fontSize
     });
     this.fit = new FitAddon();
     this.term.loadAddon(this.fit);
@@ -58,6 +59,8 @@ export default class Xterm extends React.PureComponent<ConsoleProps, ConsoleStat
   }
 
   updateLayout() {
+    this.term.setOption("fontFamily", this.props.options.font + ", monospace");
+    this.term.setOption("fontSize", this.props.options.fontSize);
     this.fit.fit();
   }
 
@@ -90,9 +93,7 @@ export default class Xterm extends React.PureComponent<ConsoleProps, ConsoleStat
   }
 
   render() {
-    let style = {...this.props.style};
-    return(<div style={this.props.style}
-                className={this.props.className}
+    return(<div className={this.props.className}
                 ref={(container: HTMLElement | null) => { this.container = container as HTMLElement; }}>
            </div>);
   }

@@ -68,17 +68,6 @@ class Display extends React.Component<DisplayProps & actionsInterface, DisplaySt
   }
   updateConsoleOptions() {
     if (this.terminal) {
-      if (this.props.settings.theme) {
-        if (this.terminal.term.element) {
-          this.terminal.term.element.classList.add("xterm-theme-light");
-          this.terminal.term.element.classList.remove("xterm-theme-default");
-        }
-      } else {
-        if (this.terminal.term.element) {
-          this.terminal.term.element.classList.remove("xterm-theme-light");
-          this.terminal.term.element.classList.add("xterm-theme-default");
-        }
-      }
       this.terminal.updateLayout();
     }
   }
@@ -176,10 +165,9 @@ class Display extends React.Component<DisplayProps & actionsInterface, DisplaySt
               className = {styles.resizeHandle} />
           </Draggable>
           <Console ref = {(elem: Console | null) => { this.terminal = elem; }}
-            className = {this.props.settings.theme ? "xterm-wrapper-light" : "xterm-wrapper-default"}
             readOnly = {this.props.appState.runState !== 2} dispatch = {this.props.dispatch}
             consoleText = {(this.props.appState.currentProject && this.props.appState.currentProject.consoleText) ? this.props.appState.currentProject.consoleText : ""}
-            style = {{fontSize: this.props.settings.fontSize}} />
+            options = {{font: this.props.settings.font, fontSize: this.props.settings.fontSize}} />
         </div>
       </div>);
     } else
