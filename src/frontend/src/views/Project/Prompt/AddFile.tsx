@@ -3,7 +3,7 @@ import {merge} from "ramda";
 import {map, actionsInterface} from "../../../actions";
 import {showError} from "../../../partials/Errors";
 import Prompt from "./Prompt";
-import { Tab2, Tabs2 } from "@blueprintjs/core";
+import { Tab, Tabs } from "@blueprintjs/core";
 
 export interface AddFileProps {
   questions: string[];
@@ -82,7 +82,7 @@ class AddFile extends React.Component<AddFileProps&actionsInterface, AddFileStat
         let reader = new FileReader();
         reader.onload = () => {
           this.props.dispatch.file.addFile(
-              this.project, this.question, `${this.state.folder}/${file.name}`, reader.result)
+            this.project, this.question, `${this.state.folder}/${file.name}`, reader.result as string)
             .then(() => resolve())
             .catch(() => resolve()); // Error handling is handled in addFile (with asyncAction)
         };
@@ -100,8 +100,8 @@ class AddFile extends React.Component<AddFileProps&actionsInterface, AddFileStat
     return(<Prompt submitMessage="Add File" closefunc={this.props.closefunc}
         submitfunc={() => this.submitForm()} disable={(val: boolean) =>
           this.setState(merge(this.state, {disabled: val}))}>
-      <Tabs2 id="add-file-dialog-tabs">
-        <Tab2 title="Empty File" id="add-file-dialog-tabs-empty" panel={
+      <Tabs id="add-file-dialog-tabs">
+        <Tab title="Empty File" id="add-file-dialog-tabs-empty" panel={
           <div className="pt-form-group">
             <div className="pt-control-group">
               <div className="pt-select">
@@ -127,8 +127,8 @@ class AddFile extends React.Component<AddFileProps&actionsInterface, AddFileStat
               onChange={(e => this.setState(merge(this.state, {file: e.currentTarget.value})))}/>
             </div>
           </div>}>
-        </Tab2>
-        <Tab2 title="Upload Files" id="add-file-dialog-tabs-upload" panel={<div className="pt-form-group">
+        </Tab>
+        <Tab title="Upload Files" id="add-file-dialog-tabs-upload" panel={<div className="pt-form-group">
           <div className="pt-control-group">
             <div className="pt-select">
               <select value={this.state.folder}
@@ -138,19 +138,19 @@ class AddFile extends React.Component<AddFileProps&actionsInterface, AddFileStat
                 <option value="common">common</option>
               </select>
             </div>
-            <label className="pt-file-upload pt-fill">
+            <label className="pt-file-input pt-fill">
               <input type="file" multiple disabled={this.state.disabled} onChange={
                 e => this.setState(merge(this.state, {
                   uploadFiles: this.filesToArray(e.currentTarget.files)
                 }))
               } />
-              <span className="pt-file-upload-input">{this.state.uploadFiles.length > 0 ? this.state.uploadFiles.length + " file"+(this.state.uploadFiles.length > 1 ? "s" : "") + " selected..." : "Upload Files..."}</span>
+              <span className="pt-file-upload-input">{this.state.uploadFiles.length > 0 ? this.state.uploadFiles.length + " file" + (this.state.uploadFiles.length > 1 ? "s" : "") + " selected..." : "Upload Files..."}</span>
             </label>
           </div>
           </div>}>
-        </Tab2>
-        <Tabs2.Expander />
-      </Tabs2>
+        </Tab>
+        <Tabs.Expander />
+      </Tabs>
     </Prompt>
     );
   }

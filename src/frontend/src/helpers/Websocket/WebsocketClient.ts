@@ -182,7 +182,7 @@ class SeashellWebsocket {
       if (message.data instanceof Blob) {
         const readerT = new FileReader();
         readerT.onloadend = async () => {
-          await this.resolveRequest(readerT.result);
+          await this.resolveRequest(<string>readerT.result);
         };
         readerT.readAsText(message.data);
       } else {

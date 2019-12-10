@@ -59,7 +59,10 @@ class LogDB extends Dexie {
   // display dump() in a new open window
   public async dumpNewWindow(): Promise<void> {
     const log = await this.dump();
-    window.open().document.write("<div style='font-family: Monospace; white-space: nowrap;'>" + log + "</div>");
+    let log_window = window.open();
+
+    if (log_window)
+      log_window.document.write("<div style='font-family: Monospace; white-space: nowrap;'>" + log + "</div>");
   };
 
 }

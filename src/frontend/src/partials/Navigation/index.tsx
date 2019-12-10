@@ -43,25 +43,25 @@ class Navigation extends React.Component<NavigationProps&actionsInterface, Navig
             className={styles.options}
             content={
               <Menu>
-                  <MenuItem iconName="help" text="Help" onClick={this.props.dispatch.dialog.toggleHelp}/>
-                  <MenuItem iconName="cog" text="Settings" onClick={this.props.dispatch.dialog.toggleSettings} />
-                  <MenuItem iconName="changes" text="Reconnect / Reset Seashell" onClick={() => {
+                  <MenuItem icon="help" text="Help" onClick={this.props.dispatch.dialog.toggleHelp}/>
+                  <MenuItem icon="cog" text="Settings" onClick={this.props.dispatch.dialog.toggleSettings} />
+                  <MenuItem icon="changes" text="Reconnect / Reset Seashell" onClick={() => {
                     this.props.dispatch.dialog.toggleResetOpen(); }}/>
                   <MenuDivider />
-                  <MenuItem iconName="box" text="Archive Projects" onClick={this.props.dispatch.dialog.toggleArchive} />
+                  <MenuItem icon="box" text="Archive Projects" onClick={this.props.dispatch.dialog.toggleArchive} />
                   <MenuItem onClick={() => { this.props.dispatch.project.downloadAll(); }}
-                    iconName="download" text="Download Projects" />
+                    icon="download" text="Download Projects" />
                   <MenuDivider />
-                  <MenuItem iconName="log-out" text="Sign Out" onClick={this.props.dispatch.user.signout} />
+                  <MenuItem icon="log-out" text="Sign Out" onClick={this.props.dispatch.user.signout} />
                   <MenuDivider />
-                  <MenuItem iconName="warning-sign" text="Report Issue" onClick={(evt) => {
+                  <MenuItem icon="warning-sign" text="Report Issue" onClick={() => {
                     // Fake a error if we have to.
                     if (!Raven.lastEventId()) {
                       Raven.captureException(new E.UserReportError("User-facing Error Report"));
                     }
                     Raven.showReportDialog({});
                   }} />
-                  <MenuItem iconName="fork" text="Contribute" href="https://github.com/cs136/seashell" target="_blank" />
+                  <MenuItem icon="fork" text="Contribute" href="https://github.com/cs136/seashell" target="_blank" />
                   <MenuItem disabled={true} text={`Seashell ${VERSION}-${(DEBUG ? "debug" : "release")}`} />
               </Menu>
             }

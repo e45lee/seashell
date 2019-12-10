@@ -1,6 +1,6 @@
 // import React from "react";
 import * as React from "react";
-import {withRouter, Switch, Route, RouteComponentProps} from "react-router";
+import {withRouter, Route, RouteComponentProps} from "react-router-dom";
 import Navigation from "./partials/Navigation";
 import {map, actionsInterface} from "./actions";
 import Project from "./views/Project";
@@ -10,7 +10,8 @@ import Home from "./views/Home";
 
 const styles = require("./Layout.scss");
 
-require("@blueprintjs/core/dist/blueprint.css");
+require("@blueprintjs/core/lib/css/blueprint.css");
+require("@blueprintjs/icons/lib/css/blueprint-icons.css");
 
 export interface LayoutProps extends RouteComponentProps<{}> { };
 export interface LayoutState { };
@@ -37,4 +38,4 @@ class Layout extends React.Component<LayoutProps & actionsInterface, LayoutState
   }
 }
 
-export default withRouter<{}>(map<LayoutProps>(Layout));
+export default withRouter(map<LayoutProps>(Layout));

@@ -2,12 +2,11 @@ import * as React from "react";
 import {merge} from "ramda";
 import * as Blueprint from "@blueprintjs/core";
 import {map, actionsInterface} from "../../actions";
-import {withRouter, RouteComponentProps} from "react-router";
+import {withRouter, RouteComponentProps} from "react-router-dom";
 import {Project} from "../../helpers/Services";
 
 interface AddProjectWindowProps extends RouteComponentProps<{}> {
   closefunc: Function;
-  history: any;
 }
 
 interface AddProjectWindowState {
@@ -15,9 +14,9 @@ interface AddProjectWindowState {
   prevProj: string;
 }
 
-class AddProjectWindow extends React.Component<AddProjectWindowProps&actionsInterface, AddProjectWindowState> {
+class AddProjectWindow extends React.Component<AddProjectWindowProps & actionsInterface, AddProjectWindowState> {
 
-  constructor(props: AddProjectWindowProps&actionsInterface) {
+  constructor(props: AddProjectWindowProps & actionsInterface) {
     super(props);
     this.state = {
       proj: "",
@@ -59,4 +58,4 @@ class AddProjectWindow extends React.Component<AddProjectWindowProps&actionsInte
   }
 }
 
-export default withRouter<{closefunc: Function}>(map<AddProjectWindowProps>(AddProjectWindow));
+export default withRouter(map<AddProjectWindowProps>(AddProjectWindow));

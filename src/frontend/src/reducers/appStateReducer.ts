@@ -438,14 +438,14 @@ export default function appStateReducer(state: appStateReducerState = {
         // Handle the specific type of update that happens when users delete a skeleton file,
         // and the backend fetches the file again
 
-        if(chgs.every((change : {type:number}) => change.type === S.ChangeType.CREATE)) {
-            chgs.forEach(function (change : {table:string, obj:{name:string}}) {
-                if(change.table === "files") {
-                    if(state.currentProject && state.currentProject.currentQuestion) {
-                        if(state.currentProject.currentQuestion.files.indexOf(change.obj.name) === -1) {
+        if (chgs.every((change: {type: number}) => change.type === S.ChangeType.CREATE)) {
+            chgs.forEach(function (change: {table: string, obj: {name: string}}) {
+                if (change.table === "files") {
+                    if (state.currentProject && state.currentProject.currentQuestion) {
+                        if (state.currentProject.currentQuestion.files.indexOf(change.obj.name) === -1) {
                             state.currentProject.currentQuestion.files.push(change.obj.name);
                         }
-                        if(state.currentProject.currentQuestion.openFiles.indexOf(change.obj.name) === -1) {
+                        if (state.currentProject.currentQuestion.openFiles.indexOf(change.obj.name) === -1) {
                             state.currentProject.currentQuestion.openFiles.push(change.obj.name);
                         }
                     }
@@ -454,7 +454,7 @@ export default function appStateReducer(state: appStateReducerState = {
             });
         }
 
-        if(newStateInconsistent) {
+        if (newStateInconsistent) {
             showInfo("Your Seashell instance was updated on another computer.  Open your project again to edit it.");
         }
         state.inconsistent = newStateInconsistent;

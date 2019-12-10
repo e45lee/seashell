@@ -29,7 +29,7 @@ function _cloneBetter<U>(value: U, refFrom: any[], refTo: any[], deep: boolean):
   switch (type(value)) {
     case "Object":  return typeof (<any>value).clone === "function" ? (<any>value).clone() : copy({});
     case "Array":   return copy([]);
-    case "Date":    return <U><any>new Date(<Date><any>value.valueOf());
+    case "Date":    return <U><any>new Date((<Date><any>value).valueOf());
     case "RegExp":  return clone(value);
     default:        return value;
   }

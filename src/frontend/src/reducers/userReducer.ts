@@ -9,7 +9,7 @@ export interface userReducerState {
 
 export interface userReducerAction extends Action {
   type: string;
-  payload: userReducerState;
+  payload: string;
 };
 
 export const userActions = {
@@ -20,7 +20,7 @@ export const userActions = {
   NOTBUSY: "LOGIN_NOTBUSY"
 };
 
-export default function userReducer(state: userReducerState = {questid: undefined, busy: false}, action: userReducerAction) {
+export default function userReducer(state: userReducerState = {questid: undefined, busy: false}, action: userReducerAction): userReducerState {
   switch (action.type) {
     case userActions.INVALIDATE:
       return {questid: undefined, busy: false};

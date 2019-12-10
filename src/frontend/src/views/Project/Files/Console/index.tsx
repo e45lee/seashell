@@ -1,9 +1,9 @@
 import * as React from "react";
-import * as Terminal from "xterm";
+import { Terminal } from "xterm";
 import { merge } from "ramda";
 import { Services } from "../../../../helpers/Services";
-
-Terminal.loadAddon("fit");
+import { FitAddon } from "xterm-addon-fit";
+import { GenericError } from "../../../../helpers/Errors";
 
 export interface ConsoleProps {
   readOnly: boolean;
@@ -20,10 +20,11 @@ export interface ConsoleState {
 };
 
 const customStyles = require("./Console.scss");
-const styles = require("xterm/lib/xterm.css");
+const styles = require("xterm/css/xterm.css");
 
 export default class Xterm extends React.PureComponent<ConsoleProps, ConsoleState> {
-  term: any;
+  term: Terminal;
+  fit: FitAddon;
   container?: HTMLElement;
 
   constructor(props: ConsoleProps, context: any) {
@@ -31,6 +32,8 @@ export default class Xterm extends React.PureComponent<ConsoleProps, ConsoleStat
     this.term = new Terminal({
       cursorBlink: true
     });
+    this.fit = new FitAddon();
+    this.term.loadAddon(this.fit);
     this.container = undefined;
   }
 
@@ -55,7 +58,7 @@ export default class Xterm extends React.PureComponent<ConsoleProps, ConsoleStat
   }
 
   updateLayout() {
-    this.term.fit();
+    this.fit.fit();
   }
 
   componentWillMount() {
@@ -65,22 +68,25 @@ export default class Xterm extends React.PureComponent<ConsoleProps, ConsoleStat
   }
 
   componentDidMount() {
-    this.term.open(this.container, false);
-    if (this.props.consoleText) this.term.write(this.props.consoleText.replace(/\r?\n/g, "\r\n"));
-    this.setState({ input: true, line: 1, currString: "" });
-    if (this.container) { // Always reachable
-      const consoleElement: HTMLElement = this.container;
-      this.term.on("key", (key: string, evt: any) => {
+    let container = this.container;
+
+    if (container) {
+      this.term.open(container);
+      if (this.props.consoleText) this.term.write(this.props.consoleText.replace(/\r?\n/g, "\r\n"));
+      this.setState({ input: true, line: 1, currString: "" });
+      this.term.onKey((event: {key: string, domEvent: KeyboardEvent}) => {
         if (!this.props.readOnly) {
-          Services.compiler().programInput(key);
-        }
-      });
+          Services.compiler().programInput(event.key);
+      }});
+    } else {
+      // Shouldn't ever get here, toss an exception
+      throw new GenericError("Couldn't get HTML container for XTerm element!");
     }
   }
 
   componentWillUnmount() {
     this.props.dispatch.app.setTerm(null, null);
-    this.term.destroy();
+    this.term.dispose();
   }
 
   render() {

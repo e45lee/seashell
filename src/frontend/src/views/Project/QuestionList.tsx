@@ -24,9 +24,9 @@ class QuestionList extends React.Component<QuestionListProps & actionsInterface,
                 if (question.openFiles.length > 0) {
                   this.props.dispatch.file.switchFile(project.id, question.name, question.openFiles[0]);
                 }
-              })} key={"question-list-item-" + question} iconName="comment" text={question} />))}
+              })} key={"question-list-item-" + question} icon="comment" text={question} />))}
           <MenuItem onClick={() => this.props.dispatch.dialog.toggleAddQuestion()}
-            iconName="add" text="Add Question" />
+            icon="add" text="Add Question" />
         </Menu>);
       else
         throw new Error("Invoking QuestionList on undefined project!");

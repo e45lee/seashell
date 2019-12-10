@@ -3,7 +3,6 @@ import { render } from "react-dom";
 import { Provider } from "react-redux";
 import { createStore, applyMiddleware } from "redux";
 import { HashRouter } from "react-router-dom";
-import { install } from "offline-plugin/runtime";
 import {actionsInterface} from "./actions";
 import HotKeys from "./HotKeys";
 import reducers from "./reducers";
@@ -27,7 +26,7 @@ if (PRODUCTION && "serviceWorker" in navigator) {
   require("offline-plugin/runtime").install();
 }
 
-Raven.config("https://33e85fb4bc9341f492534ab43a80a463@sentry.io/189114").install();
+// Raven.config("https://33e85fb4bc9341f492534ab43a80a463@sentry.io/189114").install();
 
 const store = createStore(reducers, composeWithDevTools(
   applyMiddleware(thunk)));
@@ -41,9 +40,6 @@ Services.init(store.dispatch, {
   debugLocalStorage: DEBUG,
   debugWebStorage: DEBUG
 });
-
-
-install();
 
 // Try to autoconnect if possible.
 (async () => {

@@ -15,10 +15,10 @@ class ProjectMenu extends React.Component<actionsInterface, {}> {
     if (project) {
       return (<Menu>
         <MenuItem onClick={() => { this.props.dispatch.project.downloadProject(project.id, project.name); }}
-                  iconName="download"
+                  icon="download"
                   text="Download Project" />
         <MenuItem onClick={() => { this.props.dispatch.dialog.toggleDeleteProject(); }}
-                  iconName="trash"
+                  icon="trash"
                   text="Delete Project" />
       </Menu>);
     } else {

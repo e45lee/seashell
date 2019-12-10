@@ -2,9 +2,10 @@ const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const OfflinePlugin = require('offline-plugin');
 const ArchivePlugin = require('webpack-archive-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const EmptyPlugin = function() {
   return {apply: function() {}};
 }
@@ -20,8 +21,21 @@ module.exports = function(env) {
     filename: 'bundle.[chunkhash].js',
     publicPath: './'
   },
+  optimization: {
+    minimize: !debug,	  
+    minimizer: [
+      new TerserPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: true, // Must be set to true if using source-maps in production
+        terserOptions: {
+          // https://github.com/webpack-contrib/terser-webpack-plugin#terseroptions
+        }
+      }),
+    ],
+  },
   plugins: [
-    new CleanWebpackPlugin(['dist'], { verbose: false }),
+    new CleanWebpackPlugin(),
     new CopyWebpackPlugin([
       { from: 'images/', to: 'images/' },
       {
@@ -54,15 +68,7 @@ module.exports = function(env) {
       ServiceWorker:{
         navigateFallbackURL: '/'
       }
-    }),
-    debug ? EmptyPlugin() :
-      new webpack.optimize.UglifyJsPlugin({
-        compress: {
-          warnings: true,
-        },
-        sourceMap: true,
-        minimize: true
-      }),
+    })
   ],
   resolve: {
       // Add '.ts' and '.tsx' as resolvable extensions.
@@ -85,12 +91,12 @@ module.exports = function(env) {
         use: ["style-loader", "css-loader"]
       }, {
         test: /\.(woff|woff2|ttf|eot)$/,
-        use: ['file-loader']
+        use: ['file-loader?{esModule: false}']
       },
       {
         test: /\.(jpe?g|png|gif|svg)$/i,
         use: [
-          'file-loader?hash=sha512&digest=hex&name=[hash].[ext]',
+          'file-loader?hash=sha512&digest=hex&name=[hash].[ext]&esModule=false',
           'image-webpack-loader?{bypassOnDebug: true, optipng: {optimizationLevel: 7}, gifsicle: {interlaced: false}}'
         ]
       }

@@ -69,11 +69,15 @@ class Display extends React.Component<DisplayProps & actionsInterface, DisplaySt
   updateConsoleOptions() {
     if (this.terminal) {
       if (this.props.settings.theme) {
-        this.terminal.term.element.classList.add("xterm-theme-light");
-        this.terminal.term.element.classList.remove("xterm-theme-default");
+        if (this.terminal.term.element) {
+          this.terminal.term.element.classList.add("xterm-theme-light");
+          this.terminal.term.element.classList.remove("xterm-theme-default");
+        }
       } else {
-        this.terminal.term.element.classList.remove("xterm-theme-light");
-        this.terminal.term.element.classList.add("xterm-theme-default");
+        if (this.terminal.term.element) {
+          this.terminal.term.element.classList.remove("xterm-theme-light");
+          this.terminal.term.element.classList.add("xterm-theme-default");
+        }
       }
       this.terminal.updateLayout();
     }

@@ -1,6 +1,5 @@
 import * as React from "react";
-import { BrowserRouter } from "react-router-dom";
-import { withRouter, Router, Route, RouteComponentProps } from "react-router";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 import Layout from "./Layout";
 import SignIn from "./views/SignIn";
 import {map, actionsInterface} from "./actions";
@@ -16,4 +15,4 @@ class App extends React.Component<AppProps&actionsInterface, AppState> {
   }
 }
 
-export default withRouter<{}>(map<AppProps>(App));
+export default withRouter(map<AppProps>(App));

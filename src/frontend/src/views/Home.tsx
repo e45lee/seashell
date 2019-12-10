@@ -1,7 +1,6 @@
 import * as React from "react";
 import {map, actionsInterface} from "../actions";
-import { Link } from "react-router-dom";
-import { RouteComponentProps } from "react-router";
+import { RouteComponentProps, Link } from "react-router-dom";
 import Navigation from "../partials/Navigation";
 import ProjectLink from "../partials/ProjectLink";
 import { Services } from "../helpers/Services";
@@ -37,11 +36,11 @@ class Home extends React.Component<HomeProps&actionsInterface, HomeState> {
           navRight={
             [<button className="pt-button" role="button" key="home-new-project" onClick={this.props.dispatch.dialog.toggleAddProject}>
               <span className="pt-icon-standard pt-icon-plus pt-align-left"></span>
-              New Project
+              <span>New Project</span>
             </button>,
             <button className="pt-button" role="button" key="home-refresh" onClick={this.props.dispatch.project.getAllProjects}>
               <span className="pt-icon-standard pt-icon-refresh pt-align-left"></span>
-              Refresh
+              <span>Refresh</span>
             </button>]
           }
            />

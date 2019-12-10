@@ -6,13 +6,13 @@ import Confirm from "./Confirm";
 import * as SR from "../../../reducers/appStateReducer";
 import {Services} from "../../../helpers/Services";
 import * as R from "ramda";
-import {RouterProps, withRouter} from "react-router";
+import {RouteComponentProps, withRouter} from "react-router-dom";
 
-interface DeleteProps {
+interface DeleteProps extends RouteComponentProps<{}> {
   closefunc: Function;
 };
 
-class DeleteProject extends React.Component<DeleteProps&actionsInterface&RouterProps, {}> {
+class DeleteProject extends React.Component<DeleteProps&actionsInterface, {}> {
 
   constructor(props: any) {
     super(props);
@@ -33,4 +33,4 @@ class DeleteProject extends React.Component<DeleteProps&actionsInterface&RouterP
   }
 }
 
-export default map<DeleteProps>(withRouter(DeleteProject));
+export default withRouter(map<DeleteProps>(DeleteProject));

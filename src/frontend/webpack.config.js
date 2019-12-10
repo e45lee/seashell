@@ -60,7 +60,7 @@ module.exports = {
         loader: "style-loader!css-loader"
       }, {
         test: /\.(woff|woff2|ttf|eot)$/,
-        loader: 'file-loader'
+        loader: 'file-loader?{esModule: false}'
       }, {
         test: /\.(jpe?g|png|gif|svg)$/i,
         use: [

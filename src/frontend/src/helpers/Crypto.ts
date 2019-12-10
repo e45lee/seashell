@@ -69,7 +69,7 @@ class Coder extends AbstractCoder {
     }
     let key8 = new Uint8Array(buffer);
     const key = await webcrypto.subtle.importKey("raw", key8,
-      { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+      { name: "AES-GCM", length: keyLength * 8 }, false, ["encrypt", "decrypt"]);
 
     let result = await webcrypto.subtle.encrypt({
       name: "AES-GCM",
@@ -96,7 +96,7 @@ async function hashCredentials(salt: Uint8Array, password: string) {
   let rawKey = await webcrypto.subtle.importKey(
     "raw",
     bytes,
-    {name: "PBKDF2"},
+    { name: "PBKDF2", length: bytes.length * 8 },
     false,
     ["deriveBits", "deriveKey"]);
   let key = await webcrypto.subtle.deriveKey({
@@ -105,11 +105,11 @@ async function hashCredentials(salt: Uint8Array, password: string) {
     "iterations": 10000,
     "hash": "SHA-512"},
     rawKey,
-    { "name": "AES-CBC", "length": 256},
+    { "name": "AES-CBC", "length": 256 },
     true,
     [ "encrypt", "decrypt"]);
- let result = await webcrypto.subtle.exportKey("raw", key);
- return Buffer.from(result).toString("hex");
+  let result = await webcrypto.subtle.exportKey("raw", key);
+  return Buffer.from(result).toString("hex");
 }
 
 async function storeCredentials(user: string, password: string) {

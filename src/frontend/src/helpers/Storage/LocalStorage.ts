@@ -1,7 +1,6 @@
 import Dexie from "dexie";
 import "dexie-observable";
 import "dexie-syncable";
-import md5 = require("md5");
 import * as R from "ramda";
 import {Contents, ContentsID, ContentsStored,
         File, FileID, FileStored, FileEntry,

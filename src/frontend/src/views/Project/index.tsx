@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Redirect } from "react-router";
+import {RouteComponentProps, Redirect} from "react-router-dom";
 import {Popover, Position, Tooltip} from "@blueprintjs/core";
 import {map, actionsInterface} from "../../actions";
 import DisplayFiles from "./Files/Display";
@@ -22,7 +22,6 @@ import AddQuestionPrompt from "./Prompt/AddQuestion";
 import ConflictPrompt from "./Prompt/Conflict";
 import Splash from "./Splash";
 import Loading from "./Loading";
-import {RouteComponentProps} from "react-router";
 import { showError } from "../../partials/Errors";
 import {appStateReducerProjectState} from "../../reducers/appStateReducer";
 import * as S from "../../helpers/Storage/Interface";
