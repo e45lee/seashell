@@ -325,7 +325,7 @@
                (when (not (list? cfg)) (error 'load-config "~a: config file should be an association list" config-file))
                (map (lambda (x) (match x
                                   [(list key val) (config-set! key val)]
-                                  [e (error (format 'load-config "~a: element `~s' is not a key-value pair" config-file e))]))
+                                  [e (error 'load-config (format "~a: element `~s' is not a key-value pair" config-file e))]))
                     cfg)
                (void)]))))
   (void))
