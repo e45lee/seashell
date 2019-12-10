@@ -104,7 +104,7 @@
 #include <llvm/IR/DIBuilder.h>
 #include <llvm/IR/LegacyPassManager.h>
 
-#if CLANG_VERSION_MAJOR == 7 && CLANG_VERSION_MINOR == 0
+#if CLANG_VERSION_MAJOR == 9 && CLANG_VERSION_MINOR == 0
 #else
 #error "Unsupported version of clang."
 #endif
@@ -609,7 +609,7 @@ std::string seashell_compiler_object_os (struct seashell_compiler* compiler) {
       Started = true;
     }
 
-    StringRef Opt = clang::DiagnosticIDs::getWarningOptionForDiag(Info.getID());
+    clang::StringRef Opt = clang::DiagnosticIDs::getWarningOptionForDiag(Info.getID());
     if (!Opt.empty()) {
       OS << (Started ? "," : " [") << "-W" << Opt;
       Started = true;
@@ -743,7 +743,7 @@ static int final_link_step (struct seashell_compiler* compiler, bool gen_bytecod
     llvm::SmallString<128> result;
     llvm::raw_svector_ostream raw(result);
 
-    if (Target.addPassesToEmitFile(PM, raw, nullptr, llvm::TargetMachine::CGFT_ObjectFile), false, nullptr) {
+    if (Target.addPassesToEmitFile(PM, raw, nullptr, llvm::TargetMachine::CGFT_ObjectFile)) {
       compiler->linker_messages = "libseashell-clang: couldn't emit object code for target: " + TheTriple.getTriple() + ".";
       return 1;
     }
