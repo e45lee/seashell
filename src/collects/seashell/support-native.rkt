@@ -27,13 +27,10 @@
            seashell_get_username
            seashell_set_umask
            seashell_signal_detach
-           seashell_try_and_lock_file
-           scheme_get_port_file_descriptor)
+           seashell_try_and_lock_file)
 
   (define-ffi-definer define-support
                       (ffi-lib (read-config 'seashell-support)))
-  (define-ffi-definer define-self 
-                      (ffi-lib #f))
 
   ;; These functions return 0 on success and 1 on failure if they return anything.
   ;; Manually check the result of these functions - as failure can indicate there's
@@ -44,11 +41,7 @@
   (define-support seashell_create_secret_file (_fun _path -> _int))
   (define-support seashell_uw_check_remote_user (_fun -> _int))
   (define-support seashell_get_username (_fun -> _string))
-  (define-support seashell_try_and_lock_file (_fun _int -> _int))
-
-  ;; Underlying Racket support functions.
-  (define-self scheme_get_port_file_descriptor
-               (_fun (port : _scheme) (fd : (_ptr o _long)) -> (not-error? : _bool) -> (values fd not-error?))))
+  (define-support seashell_try_and_lock_file (_fun _int -> _int)))
 
 (require/typed (submod "." ffi)
                [seashell_drop_permissions (-> Fixnum)]
@@ -57,8 +50,9 @@
                [seashell_create_secret_file (-> Path Fixnum)]
                [seashell_uw_check_remote_user (-> Fixnum)]
                [seashell_get_username (-> String)]
-               [seashell_try_and_lock_file (-> Nonnegative-Fixnum Fixnum)]
-               [scheme_get_port_file_descriptor (-> Port (Values Nonnegative-Fixnum Boolean))])
+               [seashell_try_and_lock_file (-> Nonnegative-Fixnum Fixnum)])
+(require/typed ffi/unsafe/port
+               [unsafe-port->file-descriptor (-> Port (U #f Nonnegative-Fixnum))]) 
 
 (provide seashell_drop_permissions
          seashell_create_secret_file
@@ -73,8 +67,8 @@
 ;; #t otherwise.
 (: try-and-lock-file (-> Port Boolean))
 (define (try-and-lock-file port)
-  (define-values (fd not-error?) (scheme_get_port_file_descriptor port))
+  (define fd (unsafe-port->file-descriptor port))
   (cond
-    [not-error? (= 0 (seashell_try_and_lock_file fd))]
+    [fd (= 0 (seashell_try_and_lock_file fd))]
     [else #f]))
 

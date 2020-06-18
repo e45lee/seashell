@@ -20,17 +20,10 @@
 (provide seashell-compile-files/place seashell-compile-place/shutdown
          seashell-compile-place/alive?)
 
-(module untyped racket/base
-  (require ffi/unsafe ffi/unsafe/define)
-  (define libmz (ffi-lib #f))
-  (define-ffi-definer define-mzscheme libmz)
-  (define-mzscheme scheme_make_custodian (_fun _pointer -> _scheme))
-  (provide scheme_make_custodian))
-
 (require/typed racket/serialize
                [deserialize (-> Any Any)])
-(require/typed (submod "." untyped)
-               [scheme_make_custodian (-> (U False Custodian) Custodian)])
+(require/typed ffi/unsafe/custodian
+               [make-custodian-at-root (-> Custodian)])
 
 (: global-compiler-place (Boxof (U False Place)))
 (define global-compiler-place (box #f))
@@ -103,7 +96,7 @@
       (: seashell-compile-place/init (-> Any))
       (define (seashell-compile-place/init)
         ;; Set this up in the root custodian so we don't fail.
-        (parameterize ([current-custodian (scheme_make_custodian #f)])
+        (parameterize ([current-custodian (make-custodian-at-root)])
           ;; Make sure that we don't use current-output-port
           ;; or the detach will fail.
           (define-values (place in out err)

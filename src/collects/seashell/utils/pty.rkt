@@ -21,12 +21,12 @@
 (module ffi racket/base
   (require ffi/unsafe
            ffi/unsafe/define
+           ffi/unsafe/port
            racket/string
            racket/port
            racket/system)
   (provide (all-defined-out))
 
-  (define-ffi-definer define-self (ffi-lib #f))
   (define-ffi-definer define-pty (ffi-lib "libutil"))
   (define-cstruct _winsize ([height _ushort]
                             [width _ushort]
@@ -58,9 +58,6 @@
   (define TIOCSCTTY (if freebsd-ioctls? TIOCSCTTY_bsd TIOCSCTTY_gnu))
   (define TIOCNOTTY (if freebsd-ioctls? TIOCNOTTY_bsd TIOCNOTTY_gnu))
 
-  (define-self scheme_make_fd_output_port
-               (_fun _int _scheme _int _int _int -> _scheme))
-
   (define (new-winsize [width 80] [height 24])
     (make-winsize height width 0 0))
 
@@ -76,8 +73,8 @@
                                    (error "openpty failed: ~a." r)
                                    (values amaster aslave))))
     (define-values (masterfd slavefd) (openpty #f #f winsize))
-    (define-values (m-in m-out) (scheme_make_fd_output_port masterfd (format "<pty-master:~a>" masterfd) 0 0 1))
-    (define-values (s-in s-out) (scheme_make_fd_output_port slavefd (format "<pty-slave:~a>" slavefd) 0 0 1))
+    (define-values (m-in m-out) (unsafe-file-descriptor->port masterfd (format "<pty-master:~a>" masterfd) '(read write)))
+    (define-values (s-in s-out) (unsafe-file-descriptor->port slavefd (format "<pty-slave:~a>" slavefd) '(read write)))
     (values m-in m-out s-in s-out masterfd slavefd))
 
   (define (_set-pty-size fd width height)
